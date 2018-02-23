@@ -11,7 +11,7 @@ def generate_key ( isCompressed )
   key_info = [key.addr, key.pub, key.to_base58]
 
   # Import newly created address into Bitcoin-RPC
-  $bitcoinRpc.importprivkey key.to_base58
+  $BITCOIN_RPC.importprivkey key.to_base58
 
   CSV.open(FILE_NAME, "a+") do |csv|
     csv << key_info
@@ -117,4 +117,5 @@ def is_valid_address ( address )
 
   all_addresses = get_all_addresses
   all_addresses.include? address
+
 end

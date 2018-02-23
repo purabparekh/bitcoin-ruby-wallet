@@ -93,7 +93,6 @@ if ARGV.length > 0
         puts "bitcoin-cli -regtest generate 1"
 
       else
-        # puts 'Invalid inputs parameters!'
         puts validation["err_msg"]
       end
 
@@ -101,7 +100,9 @@ if ARGV.length > 0
     # Send transactions from UTXO to multisig address
     when 'sendtomultisig'
 
-      if validate_sendtomultisig_inputs ( data )
+      validation = validate_sendtomultisig_inputs ( data )
+
+      if validation["status"]
 
         new_transaction_id = send_to_multisig ( data )
 
@@ -112,14 +113,16 @@ if ARGV.length > 0
         puts "bitcoin-cli -regtest generate 1"
 
       else
-        puts 'Invalid inputs parameters!'
+        puts validation["err_msg"]
       end
 
 
     # Redeem transactions sent to multisig address
     when 'redeemtoaddress'
 
-      if validate_redeemtoaddress_inputs ( data )
+      validation = validate_redeemtoaddress_inputs ( data )
+
+      if validation["status"]
 
         new_transaction_id = redeem_multisig_to_address ( data )
 
@@ -130,14 +133,9 @@ if ARGV.length > 0
         puts "bitcoin-cli -regtest generate 1"
 
       else
-        puts 'Invalid inputs parameters!'
+        puts validation["err_msg"]
       end
 
-
-    # Help section
-    when 'test'
-
-      puts get_private_key(data[0])
 
     # Help section
     when 'help'
@@ -149,12 +147,19 @@ if ARGV.length > 0
         show_available_commands
       end
 
-    else # default case
+
+    # For testing purpose
+    when 'test'
+
+      puts validate_redeemtoaddress_inputs(data)
+
+    # default case
+    else
       puts 'Invalid command!'
       show_available_commands
-  end # case
+  end
 
-else # if
+else
   puts "Command missing!"
   show_available_commands
-end # if
+end

@@ -9,20 +9,20 @@ include Bitcoin::Builder
 require_relative '../bitcoinrpc.rb'
 require_relative '../commonFunctions.rb'
 
-$bitcoinRpc = BitcoinRPC.new('http://purab:purab9503@127.0.0.1:18443')
+$BITCOIN_RPC = BitcoinRPC.new('http://purab:purab9503@127.0.0.1:18443')
 
 TRANSACTION_FEE = 1000
 
 # List all the UTXOs related to our wallet
 def get_all_utxo
 
-  best_block_hash = $bitcoinRpc.getbestblockhash
+  best_block_hash = $BITCOIN_RPC.getbestblockhash
 
-  block_details = $bitcoinRpc.getblock best_block_hash
+  block_details = $BITCOIN_RPC.getblock best_block_hash
 
   all_addresses_in_wallet = get_all_addresses
 
-  all_transactions = []
+  # all_transactions = []
   spent_transactions = []
   received_transactions = []
 
@@ -35,10 +35,10 @@ def get_all_utxo
 
       begin
 
-        # transaction = $bitcoinRpc.decoderawtransaction($bitcoinRpc.getrawtransaction trans_id)
-        transaction = $bitcoinRpc.getrawtransaction trans_id, true
+        # transaction = $BITCOIN_RPC.decoderawtransaction($BITCOIN_RPC.getrawtransaction trans_id)
+        transaction = $BITCOIN_RPC.getrawtransaction trans_id, true
 
-        all_transactions << trans_id
+        # all_transactions << trans_id
 
         transaction["vin"].each { |vin|
 
@@ -84,7 +84,7 @@ def get_all_utxo
       end
     }
 
-    block_details = $bitcoinRpc.getblock block_details["previousblockhash"]
+    block_details = $BITCOIN_RPC.getblock block_details["previousblockhash"]
 
   end
 
@@ -116,11 +116,11 @@ end
 def send_to_address ( data )
 
   previous_transaction_hash = data[0]
-  previous_transaction_vout = data[1].to_i
-  amount_to_pay = btc_to_satoshi(data[2].to_f)
+  previous_transaction_vout = data[1]
+  amount_to_pay = data[2]
   payee_address = data[3]
 
-  previous_transaction_hex = $bitcoinRpc.getrawtransaction previous_transaction_hash
+  previous_transaction_hex = $BITCOIN_RPC.getrawtransaction previous_transaction_hash
   previous_transaction = Bitcoin::Protocol::Tx.new(previous_transaction_hex.htb)
 
   previous_transaction_value = previous_transaction.out[previous_transaction_vout].value
@@ -144,7 +144,7 @@ def send_to_address ( data )
   transaction_output_change = Bitcoin::Protocol::TxOut.value_to_address(change_amount, change_address)
   new_transaction.add_out(transaction_output_change)
 
-  signature_hash = new_transaction.signature_hash_for_input(previous_transaction_vout, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
+  signature_hash = new_transaction.signature_hash_for_input(0, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
   
   signature = key.sign(signature_hash)
   
@@ -156,9 +156,9 @@ def send_to_address ( data )
   # verify_transaction = Bitcoin::Protocol::Tx.new(new_transaction.to_payload)
   # p ({verify: verify_transaction.verify_input_signature(0, previous_transaction)})
 
-  $transactionId = $bitcoinRpc.sendrawtransaction new_transaction.to_payload.bth
+  transaction_id = $BITCOIN_RPC.sendrawtransaction new_transaction.to_payload.bth
 
-  $transactionId
+  transaction_id
 
 end
 
@@ -166,11 +166,11 @@ end
 def send_to_multisig ( data )
 
   previous_transaction_hash = data[0]
-  previous_transaction_vout = data[1].to_i
-  amount_to_pay = btc_to_satoshi(data[2].to_f)
-  min_signatures_required = data[3].to_i
+  previous_transaction_vout = data[1]
+  amount_to_pay = data[2]
+  min_signatures_required = data[3]
 
-  previous_transaction_hex = $bitcoinRpc.getrawtransaction previous_transaction_hash
+  previous_transaction_hex = $BITCOIN_RPC.getrawtransaction previous_transaction_hash
   previous_transaction = Bitcoin::Protocol::Tx.new(previous_transaction_hex.htb)
 
   previous_transaction_value = previous_transaction.out[previous_transaction_vout].value
@@ -206,7 +206,7 @@ def send_to_multisig ( data )
   transaction_output_change = Bitcoin::Protocol::TxOut.value_to_address(change_amount, change_address)
   new_transaction.add_out(transaction_output_change)
 
-  signature_hash = new_transaction.signature_hash_for_input(previous_transaction_vout, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
+  signature_hash = new_transaction.signature_hash_for_input(0, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
   
   signature = key.sign(signature_hash)
   
@@ -220,9 +220,9 @@ def send_to_multisig ( data )
   # verify_transaction = Bitcoin::Protocol::Tx.new(new_transaction.to_payload)
   # p ({verify: verify_transaction.verify_input_signature(0, previous_transaction)})
 
-  $transactionId = $bitcoinRpc.sendrawtransaction new_transaction.to_payload.bth
+  transaction_id = $BITCOIN_RPC.sendrawtransaction new_transaction.to_payload.bth
 
-  $transactionId
+  transaction_id
 
 end
 
@@ -230,11 +230,11 @@ end
 def redeem_multisig_to_address ( data )
 
   previous_transaction_hash = data[0]
-  previous_transaction_vout = data[1].to_i
-  amount_to_pay = btc_to_satoshi(data[2].to_f)
+  previous_transaction_vout = data[1]
+  amount_to_pay = data[2]
   payee_address = data[3]
 
-  previous_transaction_hex = $bitcoinRpc.getrawtransaction previous_transaction_hash
+  previous_transaction_hex = $BITCOIN_RPC.getrawtransaction previous_transaction_hash
   previous_transaction = Bitcoin::Protocol::Tx.new(previous_transaction_hex.htb)
 
   previous_transaction_value = previous_transaction.out[previous_transaction_vout].value
@@ -242,8 +242,11 @@ def redeem_multisig_to_address ( data )
   previous_addresses = previous_transaction.out[previous_transaction_vout].parsed_script.get_addresses
   min_signatures_required = previous_transaction.out[previous_transaction_vout].parsed_script.get_signatures_required
 
-  previous_pubkeys = [] # To create change multisig script
-  previous_keys = [] # To sign the previous inputs
+  # To create change multisig script
+  previous_pubkeys = []
+
+  # To sign the previous inputs
+  previous_keys = []
 
   previous_addresses.each { |address|
     previous_key = get_key ( address )
@@ -267,7 +270,7 @@ def redeem_multisig_to_address ( data )
   transaction_output_change = Bitcoin::Protocol::TxOut.new(change_amount, change_multisig_script)
   new_transaction.add_out(transaction_output_change)
 
-  signature_hash = new_transaction.signature_hash_for_input(previous_transaction_vout, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
+  signature_hash = new_transaction.signature_hash_for_input(0, previous_transaction, Bitcoin::Script::SIGHASH_TYPE[:all])
 
   previous_keys = previous_keys.reverse()
   key = previous_keys.shift()
@@ -293,12 +296,12 @@ def redeem_multisig_to_address ( data )
   # verify_transaction = Bitcoin::Protocol::Tx.new(new_transaction.to_payload)
   # p ({verify: verify_transaction.verify_input_signature(0, previous_transaction)})
 
-  $transactionId = $bitcoinRpc.sendrawtransaction new_transaction.to_payload.bth
-  $transactionId
+  transaction_id = $BITCOIN_RPC.sendrawtransaction new_transaction.to_payload.bth
+  transaction_id
 
 end
 
-def get_transaction_from_utxo ( txid )
+def get_transaction_from_utxo ( txid, vout )
 
   all_utxo = get_all_utxo
 
@@ -308,11 +311,19 @@ def get_transaction_from_utxo ( txid )
 
   all_utxo.each { |utxo|
 
-    if utxo[:trans_id] == txid
+    if utxo[:trans_id] == txid and utxo[:vout_index] == vout
 
       transaction = utxo
     end
   }
 
   transaction
+end
+
+def is_multisig_transaction ( transaction_id, transaction_vout )
+
+  transaction_hex = $BITCOIN_RPC.getrawtransaction transaction_id
+  transaction = Bitcoin::Protocol::Tx.new(transaction_hex.htb)
+  transaction.out[transaction_vout].parsed_script.is_multisig?
+
 end
