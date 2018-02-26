@@ -9,7 +9,8 @@ include Bitcoin::Builder
 require_relative 'bitcoin_rpc.rb'
 require_relative 'common_functions.rb'
 
-$BITCOIN_RPC = BitcoinRPC.new('http://<user_name>:<password>@127.0.0.1:18443')
+# $BITCOIN_RPC = BitcoinRPC.new('http://<user_name>:<password>@127.0.0.1:18443')
+$BITCOIN_RPC = BitcoinRPC.new('http://purab:purab9503@127.0.0.1:18443')
 
 TRANSACTION_FEE = 1_000
 

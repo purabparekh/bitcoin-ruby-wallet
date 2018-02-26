@@ -1,5 +1,6 @@
 require 'json'
 
+require_relative 'utils.rb'
 require_relative 'help.rb'
 require_relative 'keys.rb'
 require_relative 'transactions.rb'
@@ -66,6 +67,10 @@ if !ARGV.empty?
   # Send transactions from UTXO to particular address
   when 'sendtoaddress'
 
+    if data.empty?
+      data = read_data_for_command('sendtoaddress')
+    end
+
     validation = validate_sendtoaddress_inputs(data)
 
     if validation['status']
@@ -86,6 +91,10 @@ if !ARGV.empty?
   # Send transactions from UTXO to multisig address
   when 'sendtomultisig'
 
+    if data.empty?
+      data = read_data_for_command('sendtomultisig')
+    end
+
     validation = validate_sendtomultisig_inputs(data)
 
     if validation['status']
@@ -105,6 +114,10 @@ if !ARGV.empty?
 
   # Redeem transactions sent to multisig address
   when 'redeemtoaddress'
+
+    if data.empty?
+      data = read_data_for_command('redeemtoaddress')
+    end
 
     validation = validate_redeemtoaddress_inputs(data)
 
@@ -136,7 +149,7 @@ if !ARGV.empty?
   # For testing purpose
   when 'test'
 
-    puts validate_redeemtoaddress_inputs(data)
+    puts read_data_for_command('redeemtoaddress')
 
   # default case
   else
