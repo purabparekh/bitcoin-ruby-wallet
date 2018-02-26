@@ -44,7 +44,7 @@ if !ARGV.empty?
   # List all the unspent transactions
   when 'listutxo'
 
-    all_utxo = get_all_utxo
+    all_utxo = list_all_utxo
 
     puts 'List of all UTXOs: '
     puts JSON.pretty_generate(all_utxo)
@@ -59,7 +59,7 @@ if !ARGV.empty?
   # Get total balance of all the unspent transactions
   when 'getbalance'
 
-    balance = get_balance
+    balance = check_balance
 
     puts 'Total balance: ' + balance.to_s
 

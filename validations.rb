@@ -12,7 +12,7 @@ def validate_sendtoaddress_inputs(data)
     data[1] = Integer(data[1])
     data[2] = btc_to_satoshi(Float(data[2]))
 
-    transaction = get_transaction_from_utxo(data[0], data[1])
+    transaction = retrieve_transaction_from_utxo(data[0], data[1])
 
     if transaction.nil?
       response['err_msg'] =
@@ -62,7 +62,7 @@ def validate_sendtomultisig_inputs(data)
     data[2] = btc_to_satoshi(Float(data[2]))
     data[3] = Integer(data[3])
 
-    transaction = get_transaction_from_utxo(data[0], data[1])
+    transaction = retrieve_transaction_from_utxo(data[0], data[1])
 
     if transaction.nil?
       response['err_msg'] =
@@ -115,7 +115,7 @@ def validate_redeemtoaddress_inputs(data)
     data[1] = Integer(data[1])
     data[2] = btc_to_satoshi(Float(data[2]))
 
-    transaction = get_transaction_from_utxo(data[0], data[1])
+    transaction = retrieve_transaction_from_utxo(data[0], data[1])
 
     if transaction.nil?
       response['err_msg'] =

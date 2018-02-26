@@ -11,10 +11,10 @@ require_relative 'common_functions.rb'
 
 $BITCOIN_RPC = BitcoinRPC.new('http://purab:purab9503@127.0.0.1:18443')
 
-TRANSACTION_FEE = 1000
+TRANSACTION_FEE = 1_000
 
 # List all the UTXOs related to our wallet
-def get_all_utxo
+def list_all_utxo
   best_block_hash = $BITCOIN_RPC.getbestblockhash
 
   block_details = $BITCOIN_RPC.getblock best_block_hash
@@ -83,10 +83,10 @@ def get_all_utxo
 end
 
 # Get balance(Addition of all UTXOs)
-def get_balance
+def check_balance
   balance = 0
 
-  all_utxo = get_all_utxo
+  all_utxo = list_all_utxo
   all_utxo.each { |utxo|
     balance += utxo['value']
   }
@@ -338,10 +338,10 @@ def redeem_multisig_to_address(data)
   transaction_id
 end
 
-def get_transaction_from_utxo(txid, vout)
+def retrieve_transaction_from_utxo(txid, vout)
   transaction = nil
 
-  all_utxo = get_all_utxo
+  all_utxo = list_all_utxo
 
   all_utxo.each { |utxo|
     if utxo['trans_id'] == txid && utxo['vout_index'] == vout
